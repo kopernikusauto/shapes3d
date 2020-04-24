@@ -158,7 +158,7 @@ shps.render.render("/path")
 
 **output:**
 
-![ex4](/SSD/Documents/shapes3dv2/misc/ex4.png)
+![ex4](misc/ex4.png)
 
 <p style="font-size:10px" align="center">scene taken from https://www.blendernation.com/2017/12/03/20-000-subscribers-free-low-poly-assets/</p>
 
