@@ -178,7 +178,7 @@ This is a partial list of the features available. **This project is in developme
 | `shps.render`  | `set_color`<br />`set_instance_segmentation`<br />`set_depth_map`<br />`set_image_resolution`<br />`set_render_configuration`,`render`<br />`set_scene_into_instance_segmentation` | Implements useful functionalities for computer vision, as well as groupings common functions used in blender repetitively regarding rendering. |
 | `shps.camera`  | `get_intrinsic_parameters`<br />`get_extrinsic_parameters`<br />`set_rotation`, `set_location`<br />`set_far`, `set_near`<br />`set_focal_lenght`, `set_fov` | Deals with functions in blender regarding the camera object. |
 | `shps.scene`   | `set_light`, `get_light`<br />`clean_scene`<br />`close_scene` | Deals with generic behaviours regarding the scene properties and elements. |
-| `shsps.shapes` | `Sphere`,  `Cuboid`,  `Cylinder`, `Capsule`                  | Implements simple classes to add geometric 3D shapes into blender scene conveniently. |
+| `shsps.shapes` | `Sphere`,  `Cuboid`,  `Cylinder`, `Capsule`, `Cone`          | Implements simple classes to add geometric 3D shapes into blender scene conveniently. |
 
 
 

@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 SUBDIVS = 5
 SPHERE = "Shapes3D_SPHERE_"
 CYLINDER = "Shapes3D_CYLINDER_"
+CONE = "Shapes3D_CONE_"
 PLANE = "Shapes3D-PLANE_"
 CUBOID = "Shapes3D-CUBOID_"
 
@@ -55,6 +56,23 @@ class Cylinder(Shape):
             location=self._location,
         )
         super(Cylinder, self)._render()
+
+
+class Cone(Shape):
+    def __init__(self, id, radius1=1, radius2=0, height=1, location=(0,0,0), color=(1,1,1)):
+        self._radius1 = radius1
+        self._radius2 = radius2
+        self._height = height
+        super(Cone, self).__init__(id, CONE, location, color)
+
+    def _render(self):
+        bpy.ops.mesh.primitive_cone_add(
+            depth=self._height,
+            radius1=self._radius1,
+            radius2=self._radius2,
+            location=self._location,
+        )
+        super(Cone, self)._render()
 
 
 class Cuboid(Shape):
