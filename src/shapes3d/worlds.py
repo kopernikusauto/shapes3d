@@ -1,13 +1,13 @@
+import math
+from pdb import set_trace
+import random
+from typing import Tuple, List, Optional, Union
+
 import bpy
 import numpy as np
-from typing import List, Tuple
-import math
-from typing import Tuple, List, Optional, Union
-import random
-from pdb import set_trace
 
 import shapes3d as shps
-from shapes3d.shapes import Plane, Sphere, Cuboid, Cylinder
+from shapes3d.shapes import Plane, Sphere, Cuboid, Cylinder, Cone
 
 class SimpleWorld:
     """Simple World class using shapes3d.
@@ -79,6 +79,7 @@ class SimpleWorld:
             if obj:
                 obj.select_set(True)
         bpy.ops.object.delete()
+        self._shapes = []
 
     def generate_intrinsic_parameters(self):
         """Returns intrinsic parameters.
@@ -158,6 +159,8 @@ class SimpleWorld:
         elif 'CYLINDER' in shape._name:
             #return max(self._radius, max(self._dims))
             return shape._radius
+        elif 'CONE' in shape._name:
+            return max([shape._radius1, shape._radius2])
         else:
             return max(shape._dims)
 
@@ -217,10 +220,10 @@ class SimpleWorld:
             return True
 
     def add_cuboid(self,
-                   dims: tuple=None,
-                   location: tuple=None,
+                   dims: Optional[tuple]=None,
+                   location: Optional[tuple]=None,
                    rotation: tuple=(0,0,0),
-                   color: tuple=None) -> bool:
+                   color: Optional[tuple]=None) -> bool:
         """Adds a cuboid in the scene.
 
         If an arg is None, it will given a scene-consistent random value (e.g. if location is
@@ -264,10 +267,10 @@ class SimpleWorld:
             return True
 
     def add_cylinder(self,
-                     radius: float=None,
-                     height: float=None,
-                     location: tuple=None,
-                     color: tuple=None):
+                     radius: Optional[float]=None,
+                     height: Optional[float]=None,
+                     location: Optional[tuple]=None,
+                     color: Optional[tuple]=None):
         success, radius, location, color = self._add_shape(radius, location, color)
 
         if not success:
@@ -284,6 +287,47 @@ class SimpleWorld:
                          height=height,
                          location=location,
                          color=color)
+            self._shapes.append(c)
+            return True
+
+    def add_cone(self,
+                 radius1: Optional[float]=None,
+                 radius2: Optional[float]=None,
+                 height: Optional[float]=None,
+                 location: Optional[tuple]=None,
+                 color: Optional[tuple]=None):
+        if not radius1 and not radius2:
+            max_radius = None
+        else:
+            if not radius1:
+                max_radius = radius2
+            elif not radius2:
+                max_radius = radius1
+            else:
+                max_radius = max([radius1, radius2])
+
+        success, max_radius, location, color = self._add_shape(max_radius, location, color)
+
+        if not success:
+            return False
+        else:
+            if not height:
+                height = random.uniform(0.5, self._dims[-1]/2)
+
+            if len(location) == 2:
+                location.append(height/2)
+
+            if not radius1:
+                radius1 = max_radius
+            if not radius2:
+                radius2 = 0
+
+            c = Cone(self._next_id(),
+                     radius1=radius1,
+                     radius2=radius2,
+                     height=height,
+                     location=location,
+                     color=color)
             self._shapes.append(c)
             return True
 
