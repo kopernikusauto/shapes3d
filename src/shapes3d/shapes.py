@@ -30,7 +30,7 @@ class Shape:
 
 
 class Sphere(Shape):
-    def __init__(self, id, radius=1, location=(0, 0, 0), color=(1,1,1)):
+    def __init__(self, id=None, radius=1, location=(0, 0, 0), color=(1,1,1)):
         self._radius = radius
         super(Sphere, self).__init__(id, SPHERE, location, color)
 
@@ -44,7 +44,7 @@ class Sphere(Shape):
 
 
 class Cylinder(Shape):
-    def __init__(self, id, radius=1, height=1, location=(0,0,0), color=(1,1,1)):
+    def __init__(self, id=None, radius=1, height=1, location=(0,0,0), color=(1,1,1)):
         self._radius = radius
         self._height = height
         super(Cylinder, self).__init__(id, CYLINDER, location, color)
@@ -59,7 +59,7 @@ class Cylinder(Shape):
 
 
 class Cone(Shape):
-    def __init__(self, id, radius1=1, radius2=0, height=1, location=(0,0,0), color=(1,1,1)):
+    def __init__(self, id=None, radius1=1, radius2=0, height=1, location=(0,0,0), color=(1,1,1)):
         self._radius1 = radius1
         self._radius2 = radius2
         self._height = height
@@ -77,7 +77,7 @@ class Cone(Shape):
 
 class Cuboid(Shape):
     """ Only Rectangular cubioids """
-    def __init__(self, id, dims, location, rotation, color):
+    def __init__(self, id=None, dims, location, rotation, color):
         self._dims = dims
         self._rotation = rotation
 
@@ -94,7 +94,7 @@ class Cuboid(Shape):
 
 class Plane(Shape):
     def __init__(self,
-                 id: int,
+                 id: Optional[int] = None,
                  dims: Tuple[float, float] = (1,1),
                  location: Tuple[float, float, float] = (0,0,0),
                  rotation: Tuple[float, float, float] = (0,0,0),

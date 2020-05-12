@@ -78,6 +78,7 @@ def set_color(activate: bool=True, file_format: str='PNG', alpha: bool=True):
         output_color_node.format.file_format = PNG_FILE_TYPE 
         if alpha:
             output_color_node.format.color_mode = 'RGBA'
+            bpy.context.scene.render.film_transparent = True
         else:
             output_color_node.format.color_mode = 'RGB'
     else:

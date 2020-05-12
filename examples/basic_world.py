@@ -16,5 +16,5 @@ if __name__ == '__main__':
     world.set_focal_length(40)
     world.set_image_resolution(600, 600)
 
-    world.render("/HDD/Downloads/")
+    world.render("./")
     world.close()

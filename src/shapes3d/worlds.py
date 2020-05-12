@@ -53,6 +53,9 @@ class SimpleWorld:
         shps.render.set_depth_map(include_png=True)
         shps.render.set_instance_segmentation()
 
+        # Set background color
+        shps.scene.set_background_color((0,0,0,0))
+
     def _create_walls(self):
         bit_a = 0 # width or height, x or y
         bit_b = 0 # positive or negative

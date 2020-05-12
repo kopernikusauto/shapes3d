@@ -1,5 +1,6 @@
 """Deals with generic behaviours regarding the scene properties and elements."""
 
+from typing import Tuple
 import bpy
 
 LIGHT_TYPE = 'LIGHT'
@@ -47,3 +48,6 @@ def get_light()->bool:
 
 def close():
     bpy.ops.wm.quit_blender()
+
+def set_background_color(color: Tuple[float, float, float, float]):
+    bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = color
