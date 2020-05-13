@@ -77,7 +77,8 @@ class Cone(Shape):
 
 class Cuboid(Shape):
     """ Only Rectangular cubioids """
-    def __init__(self, id=None, dims, location, rotation, color):
+    def __init__(self, id=None, dims=(1, 1, 1), location=(0, 0, 0),
+                 rotation=(0, 0, 0), color=(1, 1, 1)):
         self._dims = dims
         self._rotation = rotation
 
