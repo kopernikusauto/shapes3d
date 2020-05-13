@@ -8,9 +8,13 @@ LIGHT_NAME = 'Light'
 SUN_TYPE = 'SUN'
 LIGHT_SUPPORTED_TYPES = [SUN_TYPE]
 
-def clean_scene():
+def clean_scene(clear_lights: bool=False, clear_cameras: bool=False):
     for obj in bpy.context.scene.objects:
         if obj.type == 'MESH':
+            obj.select_set(True)
+        elif clear_lights and obj.type == 'LIGHT':
+            obj.select_set(True)
+        elif clear_cameras and obj.type == 'CAMERA':
             obj.select_set(True)
         else:
             obj.select_set(False)
