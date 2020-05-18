@@ -248,12 +248,14 @@ def _has_node(scene_name: str, node_name: str) -> bool:
     return node_name in tree.nodes.keys()
 
 def set_image_path(path: Optional[str]=None, file_id: Optional[int]=None):
-    if not path and not file_id:
+    if not path and not isinstance(file_id, int):
         raise AttributeError("At least one input has to be passed")
 
     tree = bpy.data.scenes[COLOR_SCENE].node_tree
 
-    if file_id:
+    if isinstance(file_id, int):
+        if bpy.context.scene.frame_start > file_id:
+            bpy.context.scene.frame_start = file_id
         bpy.data.scenes['Scene'].frame_set(file_id)
 
     if has_color():
@@ -334,7 +336,7 @@ def render(path: Optional[str] = None, file_id: Optional[int]=None) -> None:
         path (str): where to save images
         file_id (int): int to add to the name of the file. Default=frame of the scene
     """
-    if path or file_id:
+    if path or isinstance(file_id, int):
         set_image_path(path, file_id)
 
     # Render color and depth
