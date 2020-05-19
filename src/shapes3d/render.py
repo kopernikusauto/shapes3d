@@ -258,9 +258,9 @@ def set_image_path(path: Optional[str]=None, file_id: Optional[int]=None):
             bpy.context.scene.frame_start = file_id
         bpy.data.scenes['Scene'].frame_set(file_id)
 
-    if has_color():
-        if path:
-            bpy.context.scene.render.filepath = path
+    if path:
+        bpy.context.scene.render.filepath = path
+        if has_color():
             tree.nodes[OUTPUT_COLOR_NODE].base_path = path
 
     if has_depth_map():
