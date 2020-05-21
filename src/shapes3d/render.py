@@ -321,16 +321,14 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
         verts = K @ verts[:3]
         verts /= verts[2]
 
+        if clip_to_frame:
+            filt = (0 < verts[0]) & (verts[0] < im_width-1) & (0 < verts[1]) & (verts[1] < im_height-1)
+            verts = verts[:, filt]
+
         min_x = verts[0].min()
         max_x = verts[0].max()
         min_y = verts[1].min()
         max_y = verts[1].max()
-
-        if clip_to_frame:
-            min_x = max(min_x, 0)
-            min_y = max(min_y, 0)
-            max_x = min(max_x, im_width-1)
-            max_y = min(max_y, im_height-1)
 
         bbox = [int(round(min_x, 0)),
                 int(round(min_y, 0)),
