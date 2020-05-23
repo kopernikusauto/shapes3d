@@ -325,6 +325,9 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
             filt = (0 < verts[0]) & (verts[0] < im_width-1) & (0 < verts[1]) & (verts[1] < im_height-1)
             verts = verts[:, filt]
 
+        if len(verts) == 0:
+            continue 
+
         min_x = verts[0].min()
         max_x = verts[0].max()
         min_y = verts[1].min()
