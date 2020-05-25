@@ -481,7 +481,8 @@ def set_render_config(render: Optional[str]=None,
                       image_resolution: Optional[Tuple[int, int]] = None,
                       max_bounces: Optional[int] = None,
                       tile_dim: Optional[Tuple[int, int]] = None,
-                      samples: Optional[int] = None):
+                      samples: Optional[int] = None,
+                      headless: Optional[bool] = False):
     """Sets the configuration for rendering in one function
 
     Args:
@@ -492,6 +493,8 @@ def set_render_config(render: Optional[str]=None,
         max_bounces (int): Number of max bouces of ray (Cycles only)
         tile_dim (int): (x,y) tuple of ints in pixels
         samples (int): Number of samples in int (Cycles only)
+        headless (bool): Configure blender to work headless (e.g. in a server). For
+            now only supports CUDA GPUs.
     """
     if gpu and not render:
         render = CYCLES
@@ -504,6 +507,19 @@ def set_render_config(render: Optional[str]=None,
             bpy.context.scene.cycles.device = 'GPU'
         else:
             bpy.context.scene.cycles.device = 'CPU'
+
+        # Headless config
+        if headless:
+            prop = bpy.context.preferences.addons['cycles'].preferences
+            prop.get_devices()
+            prop.compute_device_type = 'CUDA'
+            for device in prop.devices:
+                if device.type == 'CUDA':
+                    device.use == True
+
+            bpy.context.scene.cycles.device = 'GPU'
+            for scene in bpy.data.scenes:
+                scene.cycles.device = 'GPU'
     
     if image_resolution:
         set_image_resolution(*image_resolution)
