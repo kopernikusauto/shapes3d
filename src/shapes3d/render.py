@@ -14,6 +14,7 @@ from typing import List
 from typing import Optional
 
 from shapes3d.utils import UndoChanges
+from shapes3d.camera import get_intrinsic_matrix
 
 SCENE = 'Scene'
 CAMERA = 'Camera'
@@ -254,12 +255,14 @@ def set_depth_map(include_png: bool = False):
 def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
                           path: Optional[str]="./",
                           file_id: Optional[int]=None,
+                          bbox_format: Optional[str]='YOLO_ABS',
                           quick: bool=False,
                           clip_to_frame: Optional[bool]=True) -> list:
     """Returns the bounding box of the objects.
 
     Returns the bounding boxes of the objects in the scene and if 
-    path is passed it also saves it in a file. Does not support classes yet
+    path is passed it also saves it in a file. Does not support classes yet.
+    The output follows YOLO format
     
     Args:
         plot_bboxes (bool): Save an image with the bounding boxes or not
@@ -268,15 +271,18 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
         file_id (int): Default None. if None, it uses the current blender frame.
             Ignored if path is None
         clip_to_frame (bool): Clip bbox to image dimensions
+        bbox_format (str): 'YOLO_ABS', 'YOLO'.
+            YOLO is [obj name, centre x, centre y, width, height] all in %
+            YOLO_ABS is [obj name, min x, max x, min y, max y] all in px
         quick (bool): approximates the 2d bounding box using
             the 3d bounding box. It is not recommended to use quick option.
             It heavily depends on the rotation and 3D shape of the object.
         
-    Returns: List(name, x, y, width, height)
+    Returns: List(name, centre x, centre y, width, height)
         name: of mesh
-        x, y: bottom, left corner
-        width: of the bounding box
-        height: of the bounding box
+        centre x, cetre y: center of bbox x and y in %
+        width: of the bounding box in %
+        height: of the bounding box in %
     """
     bboxes = []
     scene = bpy.data.scenes[SCENE]
@@ -287,13 +293,6 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
     # Get output img
     im_width = scene.render.resolution_x
     im_height = scene.render.resolution_y
-
-    # get focal lenght and sensor size
-    cam.data.lens_unit = 'MILLIMETERS'
-    cam.data.sensor_fit = 'HORIZONTAL'
-    fl = cam.data.lens
-    sensor_w = cam.data.sensor_width
-    sensor_h = sensor_w * im_height / im_width
 
     for ob in bpy.data.objects:
         if ob.type != 'MESH':
@@ -314,9 +313,7 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
         verts = to_cam @ verts # to cam
 
         # Perspective transformation
-        K = np.array([[-fl / sensor_w * im_width, 0, im_width / 2],
-                      [0, fl / sensor_h * im_height, im_height / 2],
-                      [0, 0, 1]])
+        K = get_intrinsic_matrix()
 
         verts = K @ verts[:3]
         verts /= verts[2]
@@ -328,19 +325,32 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
         if len(verts) == 0 or verts.size == 0:
             continue 
 
-        min_x = verts[0].min()
-        max_x = verts[0].max()
-        min_y = verts[1].min()
-        max_y = verts[1].max()
-
-        bbox = [int(round(min_x, 0)),
-                int(round(min_y, 0)),
-                int(round(max_x, 0)),
-                int(round(max_y, 0)),
-                ob.name]
+        min_x = int(round(verts[0].min(), 0))
+        max_x = int(round(verts[0].max(), 0))
+        min_y = int(round(verts[1].min(), 0))
+        max_y = int(round(verts[1].max(), 0))
 
         if max_x - min_x < 1 or max_y - min_y < 1:
             continue
+
+        if bbox_format == 'YOLO':
+            bbox = [ob.name,
+                    (max_x + min_x) / 2 / im_width,
+                    (max_y + min_y) / 2 / im_height,
+                    (max_x - min_x) / im_width,
+                    (max_y - min_y) / im_height
+                    ]
+
+        elif bbox_format == 'YOLO_ABS':
+            bbox = [ob.name,
+                    int(round((max_x + min_x) / 2, 0)),
+                    int(round((max_y + min_y) / 2, 0)),
+                    (max_x - min_x),
+                    (max_y - min_y)
+                    ]
+
+        else:
+            raise AttributeError("bbox_format can only be YOLO_ABS or YOLO")
 
         bboxes.append(bbox)
 
@@ -352,7 +362,10 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
         file_path = path / (BBOX_FILE_NAME + str(file_id) + ".txt")
 
         with open(file_path, "w") as f:
-            f.write("min_x, min_y, max_x, max_y, object_name")
+            if bbox_format == 'YOLO_ABS':
+                f.write("object_name, min_x, min_y, max_x, max_y")
+            elif bbox_format == 'YOLO':
+                f.write("object name, centre x, centre y, width, height")
             for bbox in bboxes:
                 bbox = [str(el) for el in bbox]
                 f.write(" ".join(bbox))
@@ -363,6 +376,7 @@ def get_2d_bounding_boxes(save_txt: Optional[bool]=False,
 def plot_2d_bboxes(bboxes: List[List],
                    path: str,
                    file_id: Optional[int]=None,
+                   bbox_format: Optional[str]='YOLO'
                    ) -> None:
     """Plots the bboxes in the current scene and saves the file.
 
@@ -371,6 +385,8 @@ def plot_2d_bboxes(bboxes: List[List],
     Args:
         bboxes (list): List of bboxes as returned in get_2d_bounding_boxes.
         path (str): Directory where to save the file
+        bbox_format (str): YOLO or YOLO_ABS. Follows YOLO format (cls, x, y, w, h).
+            YOLO_ABS uses pixels instead of %
         file_id (int): id of the file. If None, the current frame of the scene is used
     """
     if not has_color():
@@ -381,8 +397,9 @@ def plot_2d_bboxes(bboxes: List[List],
     output_color_node = tree.nodes[OUTPUT_COLOR_NODE]
 
     # Get output img
-    im_width = scene.render.resolution_x
-    im_height = scene.render.resolution_y
+    # Do to post-processing nodes it is better to use shape of loaded im
+    # im_width = scene.render.resolution_x
+    # im_height = scene.render.resolution_y
 
     im_id = bpy.data.scenes['Scene'].frame_current
     im_path = bpy.context.scene.render.filepath
@@ -400,10 +417,28 @@ def plot_2d_bboxes(bboxes: List[List],
     # im = np.array(bpy.data.images['Viewer Node'].pixels)
     # im = im.reshape((im_height, im_width, 4))[::-1]
 
+    im_width, im_height, _ = im.shape
+
     if file_id is None:
         file_id = scene.frame_current
 
-    for min_x, min_y, max_x, max_y, _ in bboxes:
+    for _, x, y, w, h in bboxes:
+        min_x = x - w/2
+        max_x = x + w/2
+        min_y = y - h/2
+        max_y = y + h/2
+
+        if bbox_format == 'YOLO':
+            min_x *= im_width
+            max_x *= im_width
+            min_y *= im_height
+            max_y *= im_height
+
+        min_x = int(round(min_x, 0))
+        min_y = int(round(min_y, 0))
+        max_x = int(round(max_x, 0))
+        max_y = int(round(max_y, 0))
+
         im[min_y, min_x:max_x] = [255, 0, 0, 255]
         im[max_y, min_x:max_x] = [255, 0, 0, 255]
         im[min_y:max_y, min_x] = [255, 0, 0, 255]
